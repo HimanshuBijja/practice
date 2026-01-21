@@ -1,0 +1,10 @@
+Enter number of data bits: Number of redundant bits: 3
+Enter 4 data bits: 
+Generated Hamming Code: 1918753 2003663552 1 8174044 1997652764 6422268 1997308989 
+
+Enter received code (introduce error if needed): 
+Error detected at position: 7
+Correcting the error...
+Corrected code: 1 0 1 1 0 1 0 
+
+Original data bits: 1 0 1 0 

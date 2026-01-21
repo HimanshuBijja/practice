@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Active C++ with IO files (dist)",
+      "type": "shell",
+      "command": "g++ \"${file}\" -o \"${workspaceFolder}/dist/${fileBasenameNoExtension}.exe\" && \"${workspaceFolder}/dist/${fileBasenameNoExtension}.exe\" < input.txt > output.txt",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
