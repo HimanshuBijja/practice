@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Permutation Tree</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f1a;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(20, 20, 35, 0.95);
+            padding: 12px 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+
+        .controls input[type="text"] {
+            padding: 8px 12px;
+            border: 2px solid #e94560;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: white;
+            width: 80px;
+            font-size: 14px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .controls button:hover {
+            background: #ff6b6b;
+        }
+
+        .controls button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .state-panel {
+            position: fixed;
+            top: 60px;
+            left: 10px;
+            background: rgba(25, 25, 40, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            z-index: 100;
+            min-width: 200px;
+            font-size: 12px;
+        }
+
+        .state-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .state-label {
+            color: #888;
+            min-width: 50px;
+        }
+
+        .state-boxes {
+            display: flex;
+            gap: 3px;
+        }
+
+        .char-box {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .marker-box {
+            width: 22px;
+            height: 22px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .marker-box.used {
+            background: #e94560;
+            color: white;
+        }
+
+        .marker-box.available {
+            background: #1a1a2e;
+            color: #4ecca3;
+            border: 1px solid #4ecca3;
+        }
+
+        .step-info {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            color: #ccc;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .step-info .hl {
+            background: #f39c12;
+            color: #000;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+
+        .results-panel {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(25, 25, 40, 0.95);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            z-index: 100;
+            max-width: 300px;
+        }
+
+        .results-panel h3 {
+            color: #4ecca3;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .results-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            padding: 4px 8px;
+            background: #4ecca3;
+            color: #000;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .tree-area {
+            padding-top: 70px;
+            overflow: auto;
+            min-height: 100vh;
+        }
+
+        .tree-svg {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .node-group {
+            cursor: pointer;
+        }
+
+        .node-rect {
+            fill: #1a1a2e;
+            stroke: #444;
+            stroke-width: 2;
+            rx: 6;
+        }
+
+        .node-rect.active {
+            stroke: #f39c12;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 8px rgba(243, 156, 18, 0.6));
+        }
+
+        .node-rect.completed {
+            stroke: #4ecca3;
+            fill: rgba(78, 204, 163, 0.1);
+        }
+
+        .node-rect.result-node {
+            stroke: #e94560;
+            fill: rgba(233, 69, 96, 0.15);
+            filter: drop-shadow(0 0 8px rgba(233, 69, 96, 0.5));
+        }
+
+        .node-s1 {
+            fill: white;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+            text-anchor: middle;
+        }
+
+        .node-s1.empty {
+            fill: #666;
+        }
+
+        .marker-bit {
+            font-family: monospace;
+            font-size: 10px;
+            font-weight: bold;
+            text-anchor: middle;
+        }
+
+        .marker-bit.on {
+            fill: white;
+        }
+
+        .marker-bit.off {
+            fill: #4ecca3;
+        }
+
+        .marker-bg.on {
+            fill: #e94560;
+        }
+
+        .marker-bg.off {
+            fill: #0f0f1a;
+            stroke: #4ecca3;
+            stroke-width: 1;
+        }
+
+        .edge-line {
+            stroke: #555;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .edge-arrow {
+            fill: #555;
+        }
+
+        .i-label-bg {
+            fill: #f39c12;
+        }
+
+        .i-label-text {
+            fill: #000;
+            font-size: 11px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        .return-edge {
+            stroke: #e94560;
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+            fill: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .return-edge.visible {
+            opacity: 1;
+        }
+
+        .return-arrow {
+            fill: #e94560;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .return-arrow.visible {
+            opacity: 1;
+        }
+
+        @keyframes flowUp {
+            0% { stroke-dashoffset: 20; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .return-edge.visible {
+            animation: flowUp 0.5s linear infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="controls">
+        <input type="text" id="inputString" value="ABC" maxlength="10">
+        <button onclick="startVisualization()">▶ Start</button>
+        <button id="pauseBtn" onclick="togglePause()" disabled>⏸ Pause</button>
+        <button onclick="resetVisualization()">↺ Reset</button>
+        <div class="speed-control">
+            <span>Speed:</span>
+            <input type="range" id="speedSlider" min="100" max="1500" value="500">
+            <span id="speedLabel">500ms</span>
+        </div>
+    </div>
+
+    <div class="state-panel">
+        <div class="state-row">
+            <span class="state-label">s:</span>
+            <div class="state-boxes" id="origStr"></div>
+        </div>
+        <div class="state-row">
+            <span class="state-label">s1:</span>
+            <div class="state-boxes" id="curS1"></div>
+        </div>
+        <div class="state-row">
+            <span class="state-label">marker:</span>
+            <div class="state-boxes" id="curMarker"></div>
+        </div>
+        <div class="state-row">
+            <span class="state-label">i:</span>
+            <div id="curI" style="color:#f39c12;font-weight:bold">-</div>
+        </div>
+        <div class="step-info" id="stepInfo">Ready...</div>
+    </div>
+
+    <div class="results-panel">
+        <h3>Results (<span id="resCount">0</span>)</h3>
+        <div class="results-grid" id="resGrid"></div>
+    </div>
+
+    <div class="tree-area">
+        <svg class="tree-svg" id="treeSvg"></svg>
+    </div>
+
+    <script>
+        let isPaused = false;
+        let delay = 500;
+        let viz = { stop: false };
+        let nodes = [];
+        let edges = [];
+        let returnEdges = [];
+
+        const NODE_W = 80;
+        const NODE_H = 65;
+        const H_GAP = 15;
+        const V_GAP = 90;
+
+        document.getElementById('speedSlider').oninput = e => {
+            delay = +e.target.value;
+            document.getElementById('speedLabel').textContent = delay + 'ms';
+        };
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? '▶' : '⏸';
+        }
+
+        function resetVisualization() {
+            viz.stop = true;
+            isPaused = false;
+            nodes = [];
+            edges = [];
+            returnEdges = [];
+            document.getElementById('treeSvg').innerHTML = '';
+            document.getElementById('curS1').innerHTML = '<span style="color:#666">∅</span>';
+            document.getElementById('curMarker').innerHTML = '';
+            document.getElementById('curI').textContent = '-';
+            document.getElementById('stepInfo').textContent = 'Ready...';
+            document.getElementById('resGrid').innerHTML = '';
+            document.getElementById('resCount').textContent = '0';
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('pauseBtn').textContent = '⏸';
+        }
+
+        async function sleep(ms) {
+            while (isPaused && !viz.stop) await new Promise(r => setTimeout(r, 100));
+            if (viz.stop) return;
+            return new Promise(r => setTimeout(r, ms));
+        }
+
+        function updateState(s1, marker, i) {
+            const s1Div = document.getElementById('curS1');
+            s1Div.innerHTML = s1 ? '' : '<span style="color:#666">∅</span>';
+            for (let c of s1) {
+                const b = document.createElement('span');
+                b.className = 'char-box';
+                b.textContent = c;
+                s1Div.appendChild(b);
+            }
+
+            const mDiv = document.getElementById('curMarker');
+            mDiv.innerHTML = '';
+            for (let v of marker) {
+                const b = document.createElement('span');
+                b.className = 'marker-box ' + (v ? 'used' : 'available');
+                b.textContent = v;
+                mDiv.appendChild(b);
+            }
+
+            document.getElementById('curI').textContent = i !== null ? i : '-';
+        }
+
+        function setStep(html) {
+            document.getElementById('stepInfo').innerHTML = html;
+        }
+
+        function calcPositions() {
+            const levels = {};
+            for (const n of nodes) {
+                if (!levels[n.depth]) levels[n.depth] = [];
+                levels[n.depth].push(n);
+            }
+
+            const maxNodes = Math.max(...Object.values(levels).map(l => l.length));
+            const svgW = Math.max(800, maxNodes * (NODE_W + H_GAP) + 100);
+
+            for (const d in levels) {
+                const arr = levels[d];
+                const totalW = arr.length * NODE_W + (arr.length - 1) * H_GAP;
+                let startX = (svgW - totalW) / 2;
+                for (const n of arr) {
+                    n.x = startX + NODE_W / 2;
+                    n.y = 30 + n.depth * V_GAP + NODE_H / 2;
+                    startX += NODE_W + H_GAP;
+                }
+            }
+
+            return { w: svgW, h: 60 + (Object.keys(levels).length) * V_GAP };
+        }
+
+        function renderTree() {
+            const { w, h } = calcPositions();
+            const svg = document.getElementById('treeSvg');
+            svg.setAttribute('width', w);
+            svg.setAttribute('height', h);
+            svg.innerHTML = '';
+
+            // Draw edges with arrows and i labels
+            for (const e of edges) {
+                const parent = nodes.find(n => n.id === e.from);
+                const child = nodes.find(n => n.id === e.to);
+                if (!parent || !child) continue;
+
+                const x1 = parent.x, y1 = parent.y + NODE_H / 2;
+                const x2 = child.x, y2 = child.y - NODE_H / 2;
+
+                // Line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const midY = (y1 + y2) / 2;
+                line.setAttribute('d', `M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}`);
+                line.setAttribute('class', 'edge-line');
+                svg.appendChild(line);
+
+                // Arrow head
+                const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                arrow.setAttribute('points', `${x2},${y2} ${x2 - 5},${y2 - 8} ${x2 + 5},${y2 - 8}`);
+                arrow.setAttribute('class', 'edge-arrow');
+                svg.appendChild(arrow);
+
+                // i label on edge
+                const labelX = (x1 + x2) / 2;
+                const labelY = midY;
+
+                const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                bg.setAttribute('cx', labelX);
+                bg.setAttribute('cy', labelY);
+                bg.setAttribute('r', 10);
+                bg.setAttribute('class', 'i-label-bg');
+                svg.appendChild(bg);
+
+                const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                txt.setAttribute('x', labelX);
+                txt.setAttribute('y', labelY);
+                txt.setAttribute('class', 'i-label-text');
+                txt.textContent = e.i;
+                svg.appendChild(txt);
+            }
+
+            // Draw return edges (dashed, going up)
+            for (const re of returnEdges) {
+                const child = nodes.find(n => n.id === re.from);
+                const parent = nodes.find(n => n.id === re.to);
+                if (!child || !parent) continue;
+
+                const x1 = child.x + 15, y1 = child.y - NODE_H / 2;
+                const x2 = parent.x + 15, y2 = parent.y + NODE_H / 2;
+                const midY = (y1 + y2) / 2;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                line.setAttribute('d', `M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}`);
+                line.setAttribute('class', 'return-edge ' + (re.visible ? 'visible' : ''));
+                line.setAttribute('id', 'return-' + re.from + '-' + re.to);
+                svg.appendChild(line);
+
+                // Return arrow head (pointing up)
+                const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                arrow.setAttribute('points', `${x2},${y2} ${x2-5},${y2+8} ${x2+5},${y2+8}`);
+                arrow.setAttribute('class', 'return-arrow ' + (re.visible ? 'visible' : ''));
+                svg.appendChild(arrow);
+            }
+
+            // Draw nodes
+            for (const n of nodes) {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'node-group');
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', n.x - NODE_W / 2);
+                rect.setAttribute('y', n.y - NODE_H / 2);
+                rect.setAttribute('width', NODE_W);
+                rect.setAttribute('height', NODE_H);
+                rect.setAttribute('class', 'node-rect ' + n.state);
+                rect.setAttribute('id', 'rect-' + n.id);
+                g.appendChild(rect);
+
+                // i label at top of box
+                const iText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                iText.setAttribute('x', n.x);
+                iText.setAttribute('y', n.y - 18);
+                iText.setAttribute('text-anchor', 'middle');
+                iText.setAttribute('fill', '#f39c12');
+                iText.setAttribute('font-size', '11px');
+                iText.setAttribute('font-weight', 'bold');
+                iText.textContent = n.loopI !== null && n.loopI !== undefined ? `i=${n.loopI}` : 'root';
+                g.appendChild(iText);
+
+                // s1 text
+                const s1Text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                s1Text.setAttribute('x', n.x);
+                s1Text.setAttribute('y', n.y);
+                s1Text.setAttribute('class', 'node-s1' + (n.s1 === '' ? ' empty' : ''));
+                s1Text.textContent = n.s1 === '' ? '∅' : '"' + n.s1 + '"';
+                g.appendChild(s1Text);
+
+                // marker bits
+                const mLen = n.marker.length;
+                const bitW = 14;
+                const startX = n.x - (mLen * bitW) / 2 + bitW / 2;
+                for (let i = 0; i < mLen; i++) {
+                    const bx = startX + i * bitW;
+                    const by = n.y + 16;
+
+                    const bitBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    bitBg.setAttribute('x', bx - 5);
+                    bitBg.setAttribute('y', by - 6);
+                    bitBg.setAttribute('width', 10);
+                    bitBg.setAttribute('height', 12);
+                    bitBg.setAttribute('rx', 2);
+                    bitBg.setAttribute('class', 'marker-bg ' + (n.marker[i] ? 'on' : 'off'));
+                    g.appendChild(bitBg);
+
+                    const bitTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    bitTxt.setAttribute('x', bx);
+                    bitTxt.setAttribute('y', by + 3);
+                    bitTxt.setAttribute('class', 'marker-bit ' + (n.marker[i] ? 'on' : 'off'));
+                    bitTxt.textContent = n.marker[i];
+                    g.appendChild(bitTxt);
+                }
+
+                svg.appendChild(g);
+            }
+        }
+
+        function addNode(id, parentId, s1, marker, depth, loopI) {
+            nodes.push({ id, s1, marker: [...marker], depth, state: 'active', loopI });
+            if (parentId !== null) {
+                edges.push({ from: parentId, to: id, i: loopI });
+            }
+            renderTree();
+        }
+
+        function showReturnEdge(childId, parentId) {
+            const existing = returnEdges.find(e => e.from === childId && e.to === parentId);
+            if (existing) {
+                existing.visible = true;
+            } else {
+                returnEdges.push({ from: childId, to: parentId, visible: true });
+            }
+            renderTree();
+        }
+
+        function setNodeState(id, state) {
+            const n = nodes.find(x => x.id === id);
+            if (n) {
+                n.state = state;
+                renderTree();
+            }
+        }
+
+        async function startVisualization() {
+            resetVisualization();
+            viz = { stop: false };
+
+            const input = document.getElementById('inputString').value.trim().toUpperCase();
+            // if (!input || input.length > 4) {
+            //     alert('Enter 1-4 characters');
+            //     return;
+            // }
+
+            document.getElementById('pauseBtn').disabled = false;
+
+            const s = input.split('').sort().join('');
+            const origDiv = document.getElementById('origStr');
+            origDiv.innerHTML = '';
+            for (let c of s) {
+                const b = document.createElement('span');
+                b.className = 'char-box';
+                b.textContent = c;
+                origDiv.appendChild(b);
+            }
+
+            const results = [];
+            const marker = new Array(s.length).fill(0);
+            let nodeId = 0;
+
+            async function perm(s1, depth, parentId, loopI) {
+                if (viz.stop) return;
+
+                const myId = nodeId++;
+                addNode(myId, parentId, s1, marker, depth, loopI);
+                updateState(s1, marker, loopI);
+                setStep(`Call: s1=<span class="hl">"${s1 || '∅'}"</span>`);
+                await sleep(delay);
+
+                if (s1.length === s.length) {
+                    results.push(s1);
+                    setStep(`Found: <span class="hl">"${s1}"</span>`);
+                    setNodeState(myId, 'result-node');
+
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    item.textContent = s1;
+                    document.getElementById('resGrid').appendChild(item);
+                    document.getElementById('resCount').textContent = results.length;
+                    await sleep(delay);
+                    return;
+                }
+
+                for (let i = 0; i < s.length; i++) {
+                    if (viz.stop) return;
+                    updateState(s1, marker, i);
+
+                    if (!marker[i]) {
+                        setStep(`i=<span class="hl">${i}</span> Add '${s[i]}'`);
+                        await sleep(delay * 0.4);
+
+                        marker[i] = 1;
+                        const childId = nodeId; // Store child ID before recursion
+                        await perm(s1 + s[i], depth + 1, myId, i);
+                        if (viz.stop) return;
+
+                        // Show return arrow from child back to this node
+                        showReturnEdge(childId, myId);
+                        
+                        marker[i] = 0;
+                        setNodeState(myId, 'active');
+                        updateState(s1, marker, i);
+                        setStep(`Return i=<span class="hl">${i}</span>`);
+                        await sleep(delay * 0.4);
+                    } else {
+                        setStep(`i=<span class="hl">${i}</span> Skip`);
+                        await sleep(delay * 0.2);
+                    }
+                }
+
+                setNodeState(myId, 'completed');
+            }
+
+            await perm('', 0, null, null);
+
+            if (!viz.stop) {
+                setStep(`Done! ${results.length} permutations`);
+                document.getElementById('pauseBtn').disabled = true;
+            }
+        }
+    </script>
+</body>
+
+</html>
